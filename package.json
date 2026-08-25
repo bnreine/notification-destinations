@@ -1,0 +1,20 @@
+{
+  "name": "notification-destinations",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy --all",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.1129.0",
+    "jest": "^30",
+    "esbuild": "^0.25.0"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.260.0",
+    "constructs": "^10.5.0"
+  }
+}
