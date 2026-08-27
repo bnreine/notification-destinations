@@ -1,0 +1,9 @@
+{
+  "name": "notification-destinations-post",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "halson": "^3.2.0"
+  }
+}
