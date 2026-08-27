@@ -2,7 +2,7 @@
   "name": "notification-destinations",
   "version": "0.1.0",
   "scripts": {
-    "postinstall": "npm ci --prefix src/list",
+    "postinstall": "npm ci --prefix src/list && npm ci --prefix src/delete",
     "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
     "cdk": "cdk",
     "synth": "cdk synth",
