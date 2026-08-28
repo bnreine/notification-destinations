@@ -22,10 +22,5 @@
       }
     }
   },
-  "body": {
-    "channelType":  "whatsapp",
-    "metadata": {
-      "phoneNumber": "+5548988016078"
-    }
-  }
+  "body": "{\"channelType\":\"whatsapp\",\"metadata\":{\"phoneNumber\":\"+5548988016078\"}}"
 }
