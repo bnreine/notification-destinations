@@ -8,7 +8,7 @@ export const handler = async (event) => {
         const dbPool = await getDbPool('readonly_rds_db');
 
         const destinationResponse = await dbPool.query(
-            `SELECT "id", "channelType", "metadata", "oAuthConnectionId", 'active' as "status" FROM "Destination" WHERE "userId" = $1`,
+            `SELECT d."id", "channelType", "metadata", "oAuthConnectionId", COALESCE(c."status", 'inactive') as "status" FROM "Destination" as d left join "Consent" as c on c."destinationId" = d.id WHERE "userId" = $1`,
             [userId]
         );
 

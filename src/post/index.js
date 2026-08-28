@@ -120,7 +120,7 @@ export const handler = async (event) => {
 
         const destinationItem = destinationResponse.rows[0];
 
-        const destinationResource = {id: destinationItem.id, channelType: destinationItem.channelType, metadata: destinationItem.metadata, oAuthConnectionId: destinationItem.oAuthConnectionId, status: "active"};
+        const destinationResource = {id: destinationItem.id, channelType: destinationItem.channelType, metadata: destinationItem.metadata, oAuthConnectionId: destinationItem.oAuthConnectionId, status};
 
         const { host, 'x-forwarded-proto': protocol } = event.headers;
         const resourceHref = `${protocol}://${host}/destinations/${destinationResource.id}`;
