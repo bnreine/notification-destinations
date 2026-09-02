@@ -1,6 +1,7 @@
 const slackDeleteAndCleanup = async ({dbPool, userId, destinationId, oAuthConnectionId}) => {
     const client = await dbPool.connect();
 
+    let accessToken = ''
     try {
         await client.query('BEGIN');
 
@@ -15,14 +16,16 @@ const slackDeleteAndCleanup = async ({dbPool, userId, destinationId, oAuthConnec
         );
 
 
-        await client.query(
+        const authDeleteResponse = await client.query(
             `
-            Delete from "OAuthConnection" where "id" = $1
+            Delete from "OAuthConnection" where "id" = $1 returning *
             `,
             [
                 oAuthConnectionId,
             ]
         );
+
+        accessToken = authDeleteResponse.rows[0].authData.accessToken;
 
         await client.query('COMMIT');
     } catch (err) {
@@ -31,6 +34,26 @@ const slackDeleteAndCleanup = async ({dbPool, userId, destinationId, oAuthConnec
     } finally {
         client.release();
     }
+
+    const response = await fetch("https://slack.com/api/auth.revoke", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    });
+
+    const result = await response.json();
+
+    if (!result.ok || !result.revoked) {
+        throw new Error(
+            `Failed to revoke Slack token: ${result.error ?? "unknown error"}`
+        );
+    }
+
+
+
+
 }
 
 export default slackDeleteAndCleanup;
