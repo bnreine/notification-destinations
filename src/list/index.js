@@ -8,7 +8,7 @@ export const handler = async (event) => {
         const dbPool = await getDbPool('readonly_rds_db');
 
         const destinationResponse = await dbPool.query(
-            `SELECT d."id", "channelType", "metadata", "oAuthConnectionId", COALESCE(c."status", 'inactive') as "status" FROM "Destination" as d left join "Consent" as c on c."destinationId" = d.id WHERE "userId" = $1`,
+            `SELECT d."id", "channelType", case when "channelType"='slack' then jsonb_build_object('channelName', d."metadata"->>'channelName','workspaceName', oa."authData"->>'workspaceName') else d."metadata" end as "metadata", "oAuthConnectionId", case when "channelType"='slack' then 'active' else COALESCE(c."status", 'inactive') end as "status" FROM "Destination" as d left join "Consent" as c on c."destinationId" = d.id left join "OAuthConnection" as oa on oa."id" = d."oAuthConnectionId"  WHERE d."userId" = $1`,
             [userId]
         );
 
