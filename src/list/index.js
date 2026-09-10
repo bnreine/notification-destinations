@@ -11,7 +11,7 @@ export const handler = async (event) => {
             `SELECT d."id", "channelType", case when "channelType"='slack' then jsonb_build_object(
                     'channelName', d."metadata"->>'channelName',
                     'workspaceName', oa."authData"->>'workspaceName'
-                                                                                ) else d."metadata" end as "metadata", "oAuthConnectionId", COALESCE(c."status", 'inactive') as "status", case when "channelType"='slack' and oa."id" is not null then 'connected' when "channelType" = 'slack' then 'disconnected' else null end as "authStatus", case when "channelType" in ('sms','whatsapp') then c."status" else null end as "consentStatus" FROM "Destination" as d left join "Consent" as c on c."destinationId" = d.id left join "OAuthConnection" as oa on oa."id" = d."oAuthConnectionId" WHERE d."userId" = $1 and d."deleted" is not true`,
+                                                                                ) else d."metadata" end as "metadata", "oAuthConnectionId", case when "channelType"='slack' and oa."id" is not null then 'connected' when "channelType" = 'slack' then 'disconnected' else null end as "authStatus", case when "channelType" in ('sms','whatsapp') then c."status" else null end as "consentStatus" FROM "Destination" as d left join "Consent" as c on c."destinationId" = d.id left join "OAuthConnection" as oa on oa."id" = d."oAuthConnectionId" WHERE d."userId" = $1 and d."deleted" is not true`,
             [userId]
         );
 

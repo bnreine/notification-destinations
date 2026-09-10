@@ -32,10 +32,6 @@ const schema = {
         consentStatus: {
             type: "string",
             enum: ["active", "pending", "revoked", "inactive"]
-        },
-        status: {
-            type: "string",
-            enum: ["active", "pending", "revoked", "inactive"]
         }
     },
     required: ["channelType"],
@@ -66,7 +62,7 @@ export const handler = async (event) => {
 
         const dbPool = await getDbPool('write_read_rds_db');
 
-        const {channelType, metadata = {}, oAuthConnectionId = null, consentStatus, status  } = body
+        const {channelType, metadata = {}, oAuthConnectionId = null, consentStatus = 'inactive'  } = body
 
 
         const consentActual = consentStatus || status || "inactive"
@@ -104,7 +100,7 @@ export const handler = async (event) => {
             ON CONFLICT ("destinationId")
             DO UPDATE SET
             "status" = EXCLUDED."status",
-                "updatedAt" = EXCLUDED."updatedAt"`, [consentId, destinationId, consentActual, now, now ]
+                "updatedAt" = EXCLUDED."updatedAt"`, [consentId, destinationId, consentStatus, now, now ]
             );
 
             const consentEventId = randomUUID();
@@ -112,7 +108,7 @@ export const handler = async (event) => {
             await client.query(
                 `INSERT INTO "ConsentEvent" ("id","destinationId", "status", "createdAt")
      VALUES ($1, $2, $3, $4)`,
-                [consentEventId, destinationId, consentActual, now]
+                [consentEventId, destinationId, consentStatus, now]
             );
 
             await client.query('COMMIT');
@@ -125,7 +121,7 @@ export const handler = async (event) => {
 
         const destinationItem = destinationResponse.rows[0];
 
-        const destinationResource = {id: destinationItem.id, channelType: destinationItem.channelType, metadata: destinationItem.metadata, oAuthConnectionId: destinationItem.oAuthConnectionId, status: consentActual, consentStatus: consentActual};
+        const destinationResource = {id: destinationItem.id, channelType: destinationItem.channelType, metadata: destinationItem.metadata, oAuthConnectionId: destinationItem.oAuthConnectionId, consentStatus};
 
         const { host, 'x-forwarded-proto': protocol } = event.headers;
         const resourceHref = `${protocol}://${host}/destinations/${destinationResource.id}`;

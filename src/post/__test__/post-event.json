@@ -22,5 +22,5 @@
       }
     }
   },
-  "body": "{\"channelType\":\"sms\",\"metadata\":{\"phoneNumber\":\"+5548988016078\"}, \"status\":\"inactive\"}"
+  "body": "{\"channelType\":\"sms\",\"metadata\":{\"phoneNumber\":\"+5548988016078\"}, \"consentStatus\":\"active\"}"
 }
