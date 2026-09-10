@@ -33,7 +33,7 @@ const schema = {
             type: "string",
             enum: ["active", "pending", "revoked", "inactive"]
         },
-        consent: {
+        status: {
             type: "string",
             enum: ["active", "pending", "revoked", "inactive"]
         }
@@ -66,10 +66,10 @@ export const handler = async (event) => {
 
         const dbPool = await getDbPool('write_read_rds_db');
 
-        const {channelType, metadata = {}, oAuthConnectionId = null, consentStatus, consent  } = body
+        const {channelType, metadata = {}, oAuthConnectionId = null, consentStatus, status  } = body
 
 
-        const consentActual = consentStatus || consent || "inactive"
+        const consentActual = consentStatus || status || "inactive"
 
         const client = await dbPool.connect();
         let destinationResponse
