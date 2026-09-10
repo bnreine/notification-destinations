@@ -14,6 +14,11 @@ const smsDeleteAndCleanup = async ({dbPool, userId, destinationId}) => {
             [destinationId]
         );
 
+        await client.query(
+            'DELETE FROM "NotificationPreference" where "destinationId" = $1',
+            [destinationId]
+        );
+
 
         await client.query(
             `
