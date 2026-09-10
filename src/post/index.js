@@ -29,7 +29,11 @@ const schema = {
             type: "string",
             enum: ["whatsapp", "sms"]
         },
-        status: {
+        consentStatus: {
+            type: "string",
+            enum: ["active", "pending", "revoked", "inactive"]
+        },
+        consent: {
             type: "string",
             enum: ["active", "pending", "revoked", "inactive"]
         }
@@ -62,9 +66,10 @@ export const handler = async (event) => {
 
         const dbPool = await getDbPool('write_read_rds_db');
 
-        const {channelType, metadata = {}, oAuthConnectionId = null, status = "inactive" } = body
+        const {channelType, metadata = {}, oAuthConnectionId = null, consentStatus, consent  } = body
 
 
+        const consentActual = consentStatus || consent || "inactive"
 
         const client = await dbPool.connect();
         let destinationResponse
@@ -75,8 +80,8 @@ export const handler = async (event) => {
             const destinationId = randomUUID();
             const now = new Date()
             destinationResponse = await client.query(
-                'INSERT INTO "Destination" ("id", "userId", "channelType", "createdAt", "metadata", "oAuthConnectionId") VALUES ($1, $2, $3,$4, $5,$6) RETURNING *',
-                [destinationId, userId, channelType, now, metadata, oAuthConnectionId ],
+                'INSERT INTO "Destination" ("id", "userId", "channelType", "createdAt", "metadata", "oAuthConnectionId","updatedAt") VALUES ($1, $2, $3,$4, $5,$6,$7) RETURNING *',
+                [destinationId, userId, channelType, now, metadata, oAuthConnectionId, now ],
             );
 
             const consentId = randomUUID();
@@ -99,7 +104,7 @@ export const handler = async (event) => {
             ON CONFLICT ("destinationId")
             DO UPDATE SET
             "status" = EXCLUDED."status",
-                "updatedAt" = EXCLUDED."updatedAt"`, [consentId, destinationId, status, now, now ]
+                "updatedAt" = EXCLUDED."updatedAt"`, [consentId, destinationId, consentActual, now, now ]
             );
 
             const consentEventId = randomUUID();
@@ -107,7 +112,7 @@ export const handler = async (event) => {
             await client.query(
                 `INSERT INTO "ConsentEvent" ("id","destinationId", "status", "createdAt")
      VALUES ($1, $2, $3, $4)`,
-                [consentEventId, destinationId, status, now]
+                [consentEventId, destinationId, consentActual, now]
             );
 
             await client.query('COMMIT');
@@ -120,7 +125,7 @@ export const handler = async (event) => {
 
         const destinationItem = destinationResponse.rows[0];
 
-        const destinationResource = {id: destinationItem.id, channelType: destinationItem.channelType, metadata: destinationItem.metadata, oAuthConnectionId: destinationItem.oAuthConnectionId, status};
+        const destinationResource = {id: destinationItem.id, channelType: destinationItem.channelType, metadata: destinationItem.metadata, oAuthConnectionId: destinationItem.oAuthConnectionId, status: consentActual, consentStatus: consentActual};
 
         const { host, 'x-forwarded-proto': protocol } = event.headers;
         const resourceHref = `${protocol}://${host}/destinations/${destinationResource.id}`;
