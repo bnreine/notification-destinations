@@ -6,7 +6,7 @@ const slackDeleteAndCleanup = async ({dbPool, userId, destinationId, oAuthConnec
         await client.query('BEGIN');
 
         await client.query(
-            'Delete FROM "Destination" WHERE "userId" = $1 AND "id" = $2',
+            'Update "Destination" set "deleted" = true, "updatedAt" = now() WHERE "userId" = $1 AND "id" = $2',
             [userId, destinationId]
         );
 
@@ -17,7 +17,7 @@ const slackDeleteAndCleanup = async ({dbPool, userId, destinationId, oAuthConnec
 
 
         const destinationsLeftResponse = await client.query(
-            'Select * FROM "Destination" WHERE "userId" = $1 AND "oAuthConnectionId" = $2',
+            'Select * FROM "Destination" WHERE "userId" = $1 AND "oAuthConnectionId" = $2 and "deleted" is not true',
             [userId, oAuthConnectionId]
         );
 
