@@ -13,7 +13,7 @@ const smsDeleteAndCleanup = async ({dbPool, userId, destinationId}) => {
         );
 
         await client.query(
-            `Update "Consent" set "status" = 'inactive', "updatedAt" = $1 where "destinationId" = $2`,
+            `Update "Consent" set "status" = 'revoked', "updatedAt" = $1 where "destinationId" = $2`,
             [now, destinationId]
         );
 
@@ -26,7 +26,7 @@ const smsDeleteAndCleanup = async ({dbPool, userId, destinationId}) => {
         await client.query(
             `INSERT INTO "ConsentEvent" ("id","destinationId", "status", "createdAt")
      VALUES ($1, $2, $3, $4)`,
-            [consentEventId, destinationId, 'inactive', now]
+            [consentEventId, destinationId, 'revoked', now]
         );
 
         await client.query('COMMIT');

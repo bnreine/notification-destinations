@@ -1,51 +1,18 @@
 import { randomUUID } from 'node:crypto';
 import { getDbPool } from '/opt/nodejs/db/connection.js';
 import hal from 'halson';
-
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
-
-const ajv = new Ajv();
-addFormats(ajv);
-
-const schema = {
-    type: "object",
-    properties: {
-        oAuthConnectionId: {
-            type: "string",
-            format: "uuid"
-        },
-        metadata: {
-            type: "object",
-            properties: {
-                phoneNumber: {
-                    "type": "string",
-                    "pattern": "^\\+[1-9]\\d{1,14}$"
-                }
-            },
-            additionalProperties: false
-        },
-        channelType: {
-            type: "string",
-            enum: ["whatsapp", "sms"]
-        },
-        consentStatus: {
-            type: "string",
-            enum: ["active", "pending", "revoked", "inactive"]
-        }
-    },
-    required: ["channelType"],
-    additionalProperties: false
-};
-
-const validate = ajv.compile(schema);
+import getConsentStatus from "./get-consent-status.js";
+import getMetadata from "./get-metadata.js";
+import validateInput from "./validate-input.js";
 
 export const handler = async (event) => {
     try {
         const userId = event?.requestContext?.authorizer?.jwt?.claims?.sub;
         const body = JSON.parse(event.body);
 
-        if (!validate({...body})) {
+        const isValidInput = validateInput(body);
+
+        if (!isValidInput) {
             return {
                 statusCode: 400,
                 headers: {
@@ -60,14 +27,14 @@ export const handler = async (event) => {
             };
         }
 
+        const consentStatus = getConsentStatus(body)
+        const metadata = getMetadata(body)
+
+        const {channelType, oAuthConnectionId = null  } = body
+
         const dbPool = await getDbPool('write_read_rds_db');
-
-        const {channelType, metadata = {}, oAuthConnectionId = null, consentStatus = 'inactive'  } = body
-
-
-        const consentActual = consentStatus || status || "inactive"
-
         const client = await dbPool.connect();
+
         let destinationResponse
 
         try {
@@ -80,10 +47,12 @@ export const handler = async (event) => {
                 [destinationId, userId, channelType, now, metadata, oAuthConnectionId, now ],
             );
 
-            const consentId = randomUUID();
 
-            await client.query(
-                `INSERT INTO "Consent" (
+            if(consentStatus){
+                const consentId = randomUUID();
+
+                await client.query(
+                    `INSERT INTO "Consent" (
                 "id",
                 "destinationId",
                 "status",
@@ -101,15 +70,16 @@ export const handler = async (event) => {
             DO UPDATE SET
             "status" = EXCLUDED."status",
                 "updatedAt" = EXCLUDED."updatedAt"`, [consentId, destinationId, consentStatus, now, now ]
-            );
+                );
 
-            const consentEventId = randomUUID();
+                const consentEventId = randomUUID();
 
-            await client.query(
-                `INSERT INTO "ConsentEvent" ("id","destinationId", "status", "createdAt")
+                await client.query(
+                    `INSERT INTO "ConsentEvent" ("id","destinationId", "status", "createdAt")
      VALUES ($1, $2, $3, $4)`,
-                [consentEventId, destinationId, consentStatus, now]
-            );
+                    [consentEventId, destinationId, consentStatus, now]
+                );
+            }
 
             await client.query('COMMIT');
         } catch (err) {
