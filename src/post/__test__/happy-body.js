@@ -1,7 +1,7 @@
-const newBody = {
+const happyBody = {
     phoneNumber: '+5548988016078',
     channelType: 'sms',
     userConsented: false
 }
 
-export default newBody;
+export default happyBody;

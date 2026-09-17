@@ -1,8 +1,5 @@
-const getConsentStatus =  ({consentStatus, userConsented}) => {
-    if(userConsented !== undefined){
-        return userConsented ? 'consented' : null
-    }
-    return consentStatus
+const getConsentStatus =  ({ userConsented}) => {
+    return userConsented ? 'consented' : null
 }
 
 export default getConsentStatus ;

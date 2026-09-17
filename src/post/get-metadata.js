@@ -1,8 +1,5 @@
-const getMetadata = ({metadata = {}, phoneNumber}) => {
-    if(phoneNumber){
-        return {phoneNumber}
-    }
-    return metadata
+const getMetadata = ({phoneNumber}) => {
+    return {phoneNumber}
 }
 
 export default getMetadata
