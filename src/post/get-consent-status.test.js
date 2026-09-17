@@ -1,7 +1,11 @@
 import getConsentStatus from './get-consent-status.js'
-import happyBody from './__test__/happy-body.js';
 
-test('get metadata new style input validation', () => {
-    const consent = getConsentStatus(happyBody)
+test('false returns a null', () => {
+    const consent = getConsentStatus({userConsented: false})
     expect(consent).toBe(null)
+})
+
+test('true returns consented', () => {
+    const consent = getConsentStatus({userConsented: true})
+    expect(consent).toBe('consented')
 })
