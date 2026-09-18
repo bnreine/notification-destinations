@@ -44,7 +44,7 @@ export const handler = async (event) => {
         const dbPool = await getDbPool('write_read_rds_db');
 
         const destinationDeleteResponse = await dbPool.query(
-            'Select * FROM "Destination" WHERE "userId" = $1 AND "id" = $2',
+            'Select * FROM "Destination" WHERE "userId" = $1 AND "id" = $2 AND "deleted" is not true',
             [userId, destinationId]
         );
 
