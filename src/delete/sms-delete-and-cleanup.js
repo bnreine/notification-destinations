@@ -12,14 +12,15 @@ const smsDeleteAndCleanup = async ({dbPool, userId, destinationId}) => {
             [now, userId, destinationId]
         );
 
-        const consentUpdateResponse = await client.query(
-            `Update "Consent" set "status" = 'revoked', "updatedAt" = $1 where "destinationId" = $2 returning *`,
-            [now, destinationId]
-        );
-
         await client.query(
             'DELETE FROM "NotificationPreference" where "destinationId" = $1',
             [destinationId]
+        );
+
+
+        const consentUpdateResponse = await client.query(
+            `Update "Consent" set "status" = 'revoked', "updatedAt" = $1 where "destinationId" = $2 returning *`,
+            [now, destinationId]
         );
 
         if(consentUpdateResponse.rows.length > 0){
@@ -28,6 +29,20 @@ const smsDeleteAndCleanup = async ({dbPool, userId, destinationId}) => {
                 `INSERT INTO "ConsentEvent" ("id","destinationId", "status", "createdAt")
      VALUES ($1, $2, $3, $4)`,
                 [consentEventId, destinationId, 'revoked', now]
+            );
+        }
+
+        const verifyUpdateResponse = await client.query(
+            `Update "Verify" set "status" = 'revoked', "updatedAt" = $1 where "destinationId" = $2 returning *`,
+            [now, destinationId]
+        );
+
+        if(verifyUpdateResponse.rows.length > 0){
+            const verifyEventId = randomUUID();
+            await client.query(
+                `INSERT INTO "VerifyEvent" ("id","verifyId", "status", "createdAt")
+     VALUES ($1, $2, $3, $4)`,
+                [verifyEventId, verifyUpdateResponse.rows[0].id, 'revoked', now]
             );
         }
 
