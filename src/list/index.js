@@ -11,7 +11,7 @@ export const handler = async (event) => {
             `SELECT d."id", "channelType", case when "channelType"='slack' then jsonb_build_object(
                     'channelName', d."metadata"->>'channelName',
                     'workspaceName', oa."authData"->>'workspaceName'
-                                                                                ) else d."metadata" end as "metadata", "oAuthConnectionId", case when "channelType"='slack' and oa."id" is not null then 'connected' when "channelType" = 'slack' then 'disconnected' else null end as "authStatus", case when "channelType" in ('sms','whatsapp') then c."status" else null end as "consentStatus" FROM "Destination" as d left join "Consent" as c on c."destinationId" = d.id left join "OAuthConnection" as oa on oa."id" = d."oAuthConnectionId" WHERE d."userId" = $1 and d."deleted" is not true`,
+                                                                                ) else d."metadata" end as "metadata", "oAuthConnectionId", case when "channelType"='slack' and oa."id" is not null then 'connected' when "channelType" = 'slack' then 'disconnected' else null end as "authStatus", case when "channelType" in ('sms','whatsapp') then c."status" else null end as "consentStatus", case when "channelType" in ('sms','whatsapp') then v."status" else null end as "verifyStatus" FROM "Destination" as d left join "Consent" as c on c."destinationId" = d.id left join "OAuthConnection" as oa on oa."id" = d."oAuthConnectionId" left join "Verify" as v on v."destinationId"=d."id" WHERE d."userId" = $1 and d."deleted" is not true`,
             [userId]
         );
 
@@ -22,7 +22,12 @@ export const handler = async (event) => {
 
         const destinations = destinationResponse.rows.map((dest) => {
             const destinationHref = `${resourceHref}/${dest.id}`;
-            return hal(dest).addLink('self', destinationHref);
+            if(userId !== '44085488-0091-707c-2208-9b6753027a15'){
+                return hal(dest).addLink('self', destinationHref);
+            }
+            const verificationChallengesHref = `${resourceHref}/${dest.id}/verification-challenges`;
+            const verificationAttemptsHref = `${resourceHref}/${dest.id}/verification-attempts`;
+            return hal(dest).addLink('self', destinationHref).addLink('verificationChallenge', verificationChallengesHref).addLink('verificationAttempt', verificationAttemptsHref);
         });
 
         const resource = hal({})
