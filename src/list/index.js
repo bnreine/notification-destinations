@@ -22,7 +22,7 @@ export const handler = async (event) => {
 
         const destinations = destinationResponse.rows.map((dest) => {
             const destinationHref = `${resourceHref}/${dest.id}`;
-            if(userId !== '44085488-0091-707c-2208-9b6753027a15'){
+            if(userId !== '44085488-0091-707c-2208-9b6753027a15' || dest.channelType !== 'sms'){
                 return hal(dest).addLink('self', destinationHref);
             }
             const verificationChallengesHref = `${resourceHref}/${dest.id}/verification-challenges`;
