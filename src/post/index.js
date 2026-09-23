@@ -144,9 +144,9 @@ export const handler = async (event) => {
 
         const { host, 'x-forwarded-proto': protocol } = event.headers;
         const resourceHref = `${protocol}://${host}/destinations/${destinationResource.id}`;
-        let returnResource = hal(destinationResource).addLink('self', resourceHref);
+        let returnResource
 
-        if(userId==='44085488-0091-707c-2208-9b6753027a15'){ // testing flag for now so that my user can test out this verify feature patform wide
+        if(userId==='44085488-0091-707c-2208-9b6753027a15' && channelType === 'sms'){ // testing flag for now so that my user can test out this verify feature patform wide
             const twilioVerificationClient = await getTwilioClient()
 
             const verification = await twilioVerificationClient.verify.v2
@@ -155,6 +155,7 @@ export const handler = async (event) => {
                     to: metadata.phoneNumber,
                     channel: channelType,
                 });
+
 
 
             const client2 = await dbPool.connect();
@@ -194,7 +195,7 @@ export const handler = async (event) => {
 
                 await client.query('COMMIT');
                 destinationResource.verifyStatus = 'pending'
-                returnResource.addLink('verificationChallenge', 'verify challenge href');
+                returnResource =hal(destinationResource).addLink('self', resourceHref).addLink('verificationChallenge', `${resourceHref}/verification-challenges`).addLink('verificationAttempt', `${resourceHref}/verification-attempts`);
 
             } catch (err) {
                 await client2.query('ROLLBACK');
@@ -202,6 +203,9 @@ export const handler = async (event) => {
             } finally {
                 client2.release();
             }
+
+        } else {
+            returnResource = hal(destinationResource).addLink('self', resourceHref);
         }
 
 
