@@ -22,5 +22,5 @@
       }
     }
   },
-  "body": "{\"channelType\":\"whatsapp\",\"phoneNumber\":\"+5511993163175\", \"userConsented\":true}"
+  "body": "{\"channelType\":\"sms\",\"phoneNumber\":\"+5511993163175\", \"userConsented\":true}"
 }

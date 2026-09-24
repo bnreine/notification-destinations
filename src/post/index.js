@@ -193,7 +193,7 @@ export const handler = async (event) => {
                     [verifyEventId, verifyId, 'sent', now]
                 );
 
-                await client.query('COMMIT');
+                await client2.query('COMMIT');
                 destinationResource.verifyStatus = 'pending'
                 returnResource =hal(destinationResource).addLink('self', resourceHref).addLink('verificationChallenge', `${resourceHref}/verification-challenges`).addLink('verificationAttempt', `${resourceHref}/verification-attempts`);
 
