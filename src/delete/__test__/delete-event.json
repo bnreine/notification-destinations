@@ -17,12 +17,12 @@
     "authorizer": {
       "jwt": {
         "claims": {
-          "sub": ""
+          "sub": "f48834d8-d021-70a1-0db7-5d647bf785f4"
         }
       }
     }
   },
   "pathParameters": {
-    "destinationId": ""
+    "destinationId": "d8aa81ae-80f0-47bc-be45-9541be46edc7"
   }
 }

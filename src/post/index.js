@@ -146,7 +146,7 @@ export const handler = async (event) => {
         const resourceHref = `${protocol}://${host}/destinations/${destinationResource.id}`;
         let returnResource
 
-        if(userId==='44085488-0091-707c-2208-9b6753027a15' && channelType === 'sms'){ // testing flag for now so that my user can test out this verify feature patform wide
+        if(channelType === 'sms'){ // testing flag for now so that my user can test out this verify feature patform wide
             const twilioVerificationClient = await getTwilioClient()
 
             const verification = await twilioVerificationClient.verify.v2
