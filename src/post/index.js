@@ -22,17 +22,28 @@ async function getTwilioClient() {
         return twilioClient;
     }
 
-    const response = await secretsManager.send(
-        new GetSecretValueCommand({
-            SecretId: process.env.TWILIO_VERIFY_SECRET_NAME
-})
-);
+    let secret
+    if(['test', 'dev'].includes(process.env.NODE_ENV)) {
+        secret = {
+            sid: process.env.OTP_TWILIO_VERIFY_ID,
+            clientSecret: process.env.OTP_TWILIO_VERIFY_CLIENT_SECRET
+        }
 
-    if (!response.SecretString) {
-        throw new Error(`Secret ${process.env.TWILIO_VERIFY_SECRET_NAME} has no SecretString`);
+    } else {
+        const response = await secretsManager.send(
+            new GetSecretValueCommand({
+                SecretId: process.env.TWILIO_VERIFY_SECRET_NAME
+            })
+        );
+
+        if (!response.SecretString) {
+            throw new Error(`Secret ${process.env.TWILIO_VERIFY_SECRET_NAME} has no SecretString`);
+        }
+
+        secret = JSON.parse(response.SecretString);
     }
 
-    const secret = JSON.parse(response.SecretString);
+
 
     twilioClient = twilio(
         secret.sid,
