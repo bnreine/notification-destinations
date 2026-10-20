@@ -15,6 +15,7 @@ export const handler = async (event) => {
             [userId]
         );
 
+
         const headers = event.headers;
         const { host, 'x-forwarded-proto': protocol } = headers;
 

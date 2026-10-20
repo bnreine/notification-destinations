@@ -157,6 +157,7 @@ export const handler = async (event) => {
         const resourceHref = `${protocol}://${host}/destinations/${destinationResource.id}`;
         let returnResource
 
+
         if(channelType === 'sms'){ // testing flag for now so that my user can test out this verify feature patform wide
             const twilioVerificationClient = await getTwilioClient()
 

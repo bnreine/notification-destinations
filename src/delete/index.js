@@ -6,6 +6,7 @@ import deleteAndCleanupTypeMapping from "./delete-and-cleanup-type-mapping.js";
 const ajv = new Ajv();
 addFormats(ajv);
 
+
 const schema = {
     type: "object",
     properties: {
