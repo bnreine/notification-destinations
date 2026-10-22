@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@aws-sdk/client-kms": "^3.1155.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1"
   }

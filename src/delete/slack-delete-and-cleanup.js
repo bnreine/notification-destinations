@@ -1,7 +1,21 @@
+import { KMSClient, DecryptCommand } from '@aws-sdk/client-kms';
+
+const kmsClient = new KMSClient({});
+
+const decrypt = async (ciphertext) => {
+    const { Plaintext } = await kmsClient.send(
+        new DecryptCommand({
+            KeyId: process.env.KMS_KEY_ID,
+            CiphertextBlob: Buffer.from(ciphertext, 'base64'),
+        }),
+    );
+    return Buffer.from(Plaintext).toString('utf8');
+};
+
 const slackDeleteAndCleanup = async ({dbPool, userId, destinationId, oAuthConnectionId}) => {
     const client = await dbPool.connect();
 
-    let accessToken = ''
+    let encryptedAccessToken = ''
     try {
         await client.query('BEGIN');
 
@@ -31,7 +45,7 @@ const slackDeleteAndCleanup = async ({dbPool, userId, destinationId, oAuthConnec
                 ]
             );
 
-            accessToken = authDeleteResponse.rows[0].authData.accessToken;
+            encryptedAccessToken = authDeleteResponse.rows[0].authData.accessToken;
         }
 
         await client.query('COMMIT');
@@ -42,7 +56,9 @@ const slackDeleteAndCleanup = async ({dbPool, userId, destinationId, oAuthConnec
         client.release();
     }
 
-    if(accessToken){
+    if(encryptedAccessToken){
+        const accessToken = await decrypt(encryptedAccessToken);
+
         const response = await fetch("https://slack.com/api/auth.revoke", {
             method: "POST",
             headers: {
